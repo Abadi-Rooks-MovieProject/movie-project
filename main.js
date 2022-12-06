@@ -1,18 +1,18 @@
 "use strict";
 // Create the search bar element
-let searchBar = document.querySelector("#search");
+// let searchBar = document.querySelector("#search");
 // let submitButton = document.querySelector("#searchButton");
-// Set the text of the submit button
-// submitButton.innerHTML = "Search";
-
-// Listen for changes to the search bar
-searchBar.addEventListener("input", function () {
-    // Get the value of the search bar
-    let searchText = searchBar.value;
-
-    // Search for movies based on the search text
-    searchMovies(searchText);
-});
+// // Set the text of the submit button
+// // submitButton.innerHTML = "Search";
+//
+// // Listen for changes to the search bar
+// searchBar.addEventListener("input", function () {
+//     // Get the value of the search bar
+//     let searchText = searchBar.value;
+//
+//     // Search for movies based on the search text
+// //     searchMovies(searchText);
+// });
 
 // Listen for the submit event on the submit button
 // submitButton.addEventListener("submit", function (event) {
@@ -28,31 +28,66 @@ searchBar.addEventListener("input", function () {
 
 
 // Search for movies with the given search text
-function searchMovies(searchText) {
+// function searchMovies(searchText) {
     // Use the fetch API to make a request to the movie database API
-    fetch(`http://www.omdbapi.com/?apikey=${movieKey}&s=${searchText}`)
+//     fetch(`http://www.omdbapi.com/?apikey=${movieKey}&t=${searchText}`)
+//         .then(function (response) {
+//             // Parse the response as JSON
+//             return response.json();
+//         })
+//         .then(function (data) {
+//             console.log(data);
+//             if (data.Response === "False") {
+//                 movieContainer.innerHTML = `
+//           <h2>Movie Not Available!</h2>
+//         `;
+//             } else {
+//                 // Loop through the list of movies and display their information
+//
+//                     const movieContainer = document.getElementById("movie-info");
+//                     movieContainer.innerHTML += `
+//             <h2>${data.Title}</h2>
+//             <p>Released: ${data.Released}</p>
+//             <p>imdbRating: ${data.imdbRating}</p>
+//             <p>Genre: ${data.Genre}</p>
+//           `;
+//
+//             }
+//         });
+// }
+
+$(document).ready(function() {
+    // When the user clicks the submit button...
+    $("#searchButton").click(function() {
+        // Get the search query from the input field
+        // var searchQuery = searchBar.value;
+        let searchBar = document.querySelector("#search");
+        let searchText = searchBar.value;
+
+        // Use jQuery's ajax function to send a GET request to the server
+        fetch(`http://www.omdbapi.com/?apikey=${movieKey}&t=${searchText}`)
         .then(function (response) {
             // Parse the response as JSON
             return response.json();
         })
         .then(function (data) {
             console.log(data);
-        //     if (data.Response === "False") {
-        //         movieContainer.innerHTML = `
-        //   <h2>Movie Not Available!</h2>
-        // `;
-        //     } else {
-        //         // Loop through the list of movies and display their information
-        //         data.Search.forEach(function (movie) {
-        //             const movieContainer = document.getElementById("movie-info");
-        //             movieContainer.innerHTML += `
-        //     <h2>${movie.Title}</h2>
-        //     <p>Released: ${movie.Released}</p>
-        //     <p>imdbRating: ${movie.imdbRating}</p>
-        //     <p>Genre: ${movie.Genre}</p>
-        //   `;
-        //         });
-        //     }
-        });
-}
+            if (data.Response === "False") {
+                movieContainer.innerHTML = `
+          <h2>Movie Not Available!</h2>
+        `;
+            } else {
+                // Loop through the list of movies and display their information
 
+                    const movieContainer = document.getElementById("movie-info");
+                    movieContainer.innerHTML += `
+            <h2>${data.Title}</h2>
+            <p>Released: ${data.Released}</p>
+            <p>imdbRating: ${data.imdbRating}</p>
+            <p>Genre: ${data.Genre}</p>
+          `;
+
+            }
+        });
+    });
+});
