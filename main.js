@@ -1,99 +1,58 @@
 "use strict";
-const get_movie = (value = "goonies") => {
-    // Challenge: Display a loader
-    fetch(`http://www.omdbapi.com/?apikey=${movieKey}&t=${value}`)
-        .then((response) => response.json())
-        .then((data) => {
-            console.log(data);
+// Create the search bar element
+let searchBar = document.querySelector("#search");
+// let submitButton = document.querySelector("#searchButton");
+// Set the text of the submit button
+// submitButton.innerHTML = "Search";
 
-        })
+// Listen for changes to the search bar
+searchBar.addEventListener("input", function () {
+    // Get the value of the search bar
+    let searchText = searchBar.value;
 
-    // }
-        //     if (data._embedded.episodes.length > 0) {
-        //         const new_data = data._embedded.episodes.slice(0, 4);
-        //
-        //         create_UI(data);
-        //         return create_episodesUI(new_data);
-        //     } else {
-        //         return create_UI(data);
-        //     }
+    // Search for movies based on the search text
+    searchMovies(searchText);
+});
 
-        // .catch((error) => {
-        //     console.log(error);
-        //     // Challenge: Display error messages
-        // });
-};
-
-// const create_UI = (data) => {
-//     const movie_img = document.querySelector("#img_src");
-//     const movie_icon = document.querySelector("#img_icon");
-//     const movie_title = document.querySelector(".movie_title");
-//     const movie_desc = document.querySelector(".movie_desc");
-//     const movie_link = document.querySelector(".btn");
-//     const movie_date = document.querySelector("#movie_date");
-//     const movie_rating = document.querySelector("#movie_rating");
-//     const movie_runtime = document.querySelector("#movie_runtime");
-//     const movie_status = document.querySelector("#movie_status");
+// Listen for the submit event on the submit button
+// submitButton.addEventListener("submit", function (event) {
+//     // Prevent the default form submission behavior
+//     event.preventDefault();
 //
-//     // set the UI
-//     movie_icon.src = data.image.medium;
-//     movie_img.src = data.poster;
-//     movie_title.textContent = data.title;
-//     movie_desc.innerHTML = data.summary;
-//     movie_link.href = data.officialSite;
-//     movie_date.textContent = data.premiered;
-//     movie_rating.textContent = data.rating.average;
-//     movie_runtime.textContent = data.runtime;
-//     movie_status.textContent = data.status;
-// };
-
-// const create_episodesUI = (data) => {
-//     //episodes
-//     const episodes_list = document.querySelector("#episodes");
-//     const episodes_title = document.querySelector(".episodes_title");
+//     // Get the value of the search bar
+//     let searchText = searchBar.value;
 //
-//     // remove children if they exist
-//     episodes_title.textContent = "";
-//     episodes_list.innerHTML = "";
-//
-//     // add the title
-//     episodes_title.textContent = "Episodes";
-//
-//     data.forEach((episode) => {
-//         let li = document.createElement("li");
-//         const link = document.createElement("a");
-//         const img = document.createElement("img");
-//         img.src = episode.image.original;
-//         // Append the text node to anchor element.
-//         link.appendChild(img);
-//
-//         // Set the title.
-//         link.title = episode.name;
-//
-//         // Set the href property.
-//         link.href = episode.url;
-//
-//         // Append the anchor element to the body.
-//         li.appendChild(link);
-//         episodes_list.appendChild(li);
-//     });
-// };
-
-// handle form submit
-const search = (event) => {
-    event.preventDefault();
-    const value = document.querySelector(".header_form-input").value;
-
-    get_movie(value);
-};
-
-// create default UI
-get_movie();
-// $(document).ready(function () {
-//     $.get(`https://www.omdbapi.com/?apikey=${movieKey}&s=the-dark-knight`)
-//         console.log(data)
-//
-//
+//     // Search for movies based on the search text
+//     searchMovies(searchText);
 // });
-// //
+
+
+// Search for movies with the given search text
+function searchMovies(searchText) {
+    // Use the fetch API to make a request to the movie database API
+    fetch(`http://www.omdbapi.com/?apikey=${movieKey}&s=${searchText}`)
+        .then(function (response) {
+            // Parse the response as JSON
+            return response.json();
+        })
+        .then(function (data) {
+            console.log(data);
+        //     if (data.Response === "False") {
+        //         movieContainer.innerHTML = `
+        //   <h2>Movie Not Available!</h2>
+        // `;
+        //     } else {
+        //         // Loop through the list of movies and display their information
+        //         data.Search.forEach(function (movie) {
+        //             const movieContainer = document.getElementById("movie-info");
+        //             movieContainer.innerHTML += `
+        //     <h2>${movie.Title}</h2>
+        //     <p>Released: ${movie.Released}</p>
+        //     <p>imdbRating: ${movie.imdbRating}</p>
+        //     <p>Genre: ${movie.Genre}</p>
+        //   `;
+        //         });
+        //     }
+        });
+}
 
