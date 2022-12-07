@@ -3,44 +3,41 @@ $(document).ready(function () {
     let favButton = $('#favorite-button');
     favButton.css('display', 'none');
 
-    // When the user clicks the submit button...
-    let card = $("#searchButton").click(function (event) {
-        event.preventDefault();
+    // Search Function
+    function searchButton() {
+        let card = $("#searchButton").click(function (event) {
+            event.preventDefault();
+            let searchBar = document.querySelector("#search");
+            let searchText = searchBar.value;
+            let posterImage = ''
+            fetch(`http://www.omdbapi.com/?apikey=${movieKey}&s=${searchText}`)
+                .then(function (response) {
+                    // Parse the response as JSON
+                    return response.json();
+                })
+                .then(function (poster) {
+                    // console.log(poster);
+                    posterImage = poster.Search[0].Poster;
+                });
 
-        let searchBar = document.querySelector("#search");
-        let searchText = searchBar.value;
-        let posterImage = ''
-        fetch(`http://www.omdbapi.com/?apikey=${movieKey}&s=${searchText}`)
-            .then(function (response) {
-                // Parse the response as JSON
-                return response.json();
-            })
-            .then(function (poster) {
-                console.log(poster);
+            fetch(`http://www.omdbapi.com/?apikey=${movieKey}&t=${searchText}`)
+                .then(function (response) {
+                    // Parse the response as JSON
+                    return response.json();
+                })
+                .then(function (data) {
+                    console.log(data);
+                    let movieContainer = document.getElementById("movie-info");
+                    if (data.Response === "False") {
+                        movieContainer.innerHTML = '';
+                        movieContainer.innerHTML += "Movie Not Available!";
+                        favButton.css('display', 'none');
+                    } else {
+                        movieContainer.innerHTML = '';
+                        let delay = 500; // delay time in milliseconds
 
-                posterImage = poster.Search[0].Poster;
-            });
-
-        fetch(`http://www.omdbapi.com/?apikey=${movieKey}&t=${searchText}`)
-            .then(function (response) {
-                // Parse the response as JSON
-                return response.json();
-            })
-            .then(function (data) {
-
-                console.log(data);
-                // let movieDisplay = [];
-                let movieContainer = document.getElementById("movie-info");
-                if (data.Response === "False") {
-                    movieContainer.innerHTML = '';
-                    movieContainer.innerHTML += "Movie Not Available!";
-                    favButton.css('display', 'none');
-                } else {
-                    movieContainer.innerHTML = '';
-                    let delay = 500; // delay time in milliseconds
-
-                    let timeoutId = setTimeout(function () {
-                        movieContainer.innerHTML += `
+                        let timeoutId = setTimeout(function () {
+                            movieContainer.innerHTML += `
                         <div class="card-body">
                           <img id="posterImage" src = "${posterImage}" class="card-img-top" alt="...">
                            <h5 id="movieTitle" class="card-title">${data.Title}</h5>
@@ -50,62 +47,79 @@ $(document).ready(function () {
 <!--                          <a id="favorite-button" href="#" class="btn btn-primary">Add to Favorites</a>-->
                          </div>                
                         `;
-                        favButton.show();
-                    }, delay);
-                    // console.log($("#favorite-button"))
-                    // $('#favorite-button').toggle("d-none");
-                    //
-                    //     $('#favorite-button').click(function(event) {
-                    //         event.preventDefault();
-                    //
-                    //     });
+                            favButton.show();
+                        }, delay);
+                    }
+                })
+        });
+    }
 
-                }
+    searchButton();
+
+
+// THIS FUNCTION SENDS THE MOVIE TO THE FAVORITE LIST DATABASE
+    function sendToDatabase() {
+        document.getElementById('favorite-button').addEventListener('click', (function () {
+            let posterImage = document.querySelector('#posterImage');
+            let movieTitle = document.querySelector('#movieTitle');
+            let releaseDate = document.querySelector('#released');
+            let rating = document.querySelector('#rating');
+            let genre = document.querySelector('#genre');
+            console.log("event fired");
+            let movieObj = {
+                image: posterImage.src,
+                title: movieTitle.textContent,
+                released: releaseDate.textContent,
+                rating: rating.textContent,
+                genre: genre.textContent,
+            };
+            const url = 'https://flannel-brick-list.glitch.me/movies';
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(movieObj),
+            };
+            fetch(url, options)
+                .then(response => console.log(response)) /* review was created successfully */
+                .catch(error => console.error(error)); /* handle errors */
+        }))
+    }
+
+    sendToDatabase();
+
+    let movieIDs = [];
+
+    // console.log(movieIDs);
+
+    function renderFavorites() {
+        fetch("https://flannel-brick-list.glitch.me/movies")
+            .then(function (response) {
+                return response.json();
             })
-    });
-
-
-    document.getElementById('favorite-button').addEventListener('click', (function () {
-        let posterImage = document.querySelector('#posterImage');
-        let movieTitle = document.querySelector('#movieTitle');
-        let releaseDate = document.querySelector('#released');
-        let rating = document.querySelector('#rating');
-        let genre = document.querySelector('#genre');
-        console.log("event fired");
-        let movieObj = {
-            image: posterImage.textContent,
-            title: movieTitle.textContent,
-            released: releaseDate.textContent,
-            rating: rating.textContent,
-            genre: genre.textContent,
-        };
-        const url = 'https://flannel-brick-list.glitch.me/movies';
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(movieObj),
-        };
-        fetch(url, options)
-            .then(response => console.log(response)) /* review was created successfully */
-            .catch(error => console.error(error)); /* handle errors */
-    }))
-
-
-});
-
-fetch("https://flannel-brick-list.glitch.me/movies")
-    .then(function (response) {
-        // Parse the response as JSON
-        return response.json();
-    })
-    .then(function (favoritesData) {
-        favoritesData.forEach(function (favMovie) {
-            let favoriteList = document.getElementById('favorite-list')
-            favoriteList.innerHTML += `
-            <li>${favMovie.title} (${favMovie.released})</li>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo">Edit</button>
+            .then(function (favoritesData) {
+                // console.log(movieId)
+                favoritesData.forEach(function (favMovie) {
+                    // movieIDs.push(favMovie.id);
+                    let favoriteList = document.getElementById('sidebar')
+                    // console.log(favMovie)
+                    favoriteList.innerHTML += `
+    <!--FAVORITE MOVIE CARD-->
+            <div class="card" style="width: 18em;">
+    <img src="${favMovie.image}" class="card-img-top">
+    <div class="card-body">
+        <h5 class="card-title">${favMovie.title}</h5>
+    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">${favMovie.released}</li>
+        <li class="list-group-item">${favMovie.rating}</li>
+        <li class="list-group-item">${favMovie.genre}</li>
+        <li class="list-group-item"  id="favmovie-${favMovie.id}"></li>
+    </ul>
+<!--   EDIT/DELETE MODAL-->
+    <div class="card-body">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo">Edit</button>
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -136,45 +150,91 @@ fetch("https://flannel-brick-list.glitch.me/movies")
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Submit</button>
+                <button type="button" id="editButton" class="btn btn-primary">Submit</button>
             </div>
         </div>
     </div>
 </div>
-            `
-        })
-    })
+        <button type="button" id="deleteButton-${favMovie.id}" class="btn btn-primary" value="${favMovie.id}">Delete</button>
+    </div>
+</div>`
+                })
+            })
+    }
+    renderFavorites();
+
+    function deleteButton () {
+        fetch("https://flannel-brick-list.glitch.me/movies")
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (favoritesData) {
+                // console.log(movieId)
+                favoritesData.forEach(function (favMovie) {
+                    console.log(`${favMovie.id}`)
+                    $(`#deleteButton-${favMovie.id}`).click(function () {
+                        console.log('event fired');
+                        const url = 'https://flannel-brick-list.glitch.me/movies';
+                        const options = {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        };
+                        fetch(url, options)
+                            .then(response => console.log(response)) /* review was created successfully */
+                            .catch(error => console.error(error)); /* handle errors */
+                            });
+                    // deleteMovie(`${favMovie.id}`)
+                        })
+                    })
+                }
+    deleteButton();
 
 
-//
-// // get the array from the database using jQuery's $.ajax() function
-//     $.ajax({
-//         url: "https://flannel-brick-list.glitch.me/movies", type: "GET", dataType: "json", success: function (array) {
-//             // add the new object to the array
-//             array.push(newObject);
-//             console.log(array);
-//
-//             // save the array back to the database using $.ajax()
-//             $.ajax({
-//                 url: "https://flannel-brick-list.glitch.me/movies",
-//                 type: "POST",
-//                 data: JSON.stringify(array),
-//                 contentType: "application/json; charset=utf-8",
-//                 dataType: "json",
-//                 success: function (result) {
-//                     // the array was saved successfully
-//                     console.log(result);
-//                 }
-//             });
-//         }
-//     });
-//
-// });
+    // // EDIT BUTTON ON SUBMIT
+    //
+    // document.getElementById('editButton').addEventListener('click', (function () {
+    //     console.log('event fired');
+    //     let posterImage = document.querySelector('#posterImage');
+    //     let editedTitle = document.querySelector('#title-name');
+    //     console.log(editedTitle);
+    //     let editedRelease = document.querySelector('#release-date');
+    //     let editedRating = document.querySelector('#rating-name');
+    //     let editedGenre = document.querySelector('#genre-name');
+    //
+    //     const editedObj = {
+    //         image: posterImage.src,
+    //         title: editedTitle.textContent,
+    //         released: editedRelease.textContent,
+    //         rating: editedRating.textContent,
+    //         genre: editedGenre.textContent,
+    //     };
+    //
+    //     const url = 'https://flannel-brick-list.glitch.me/movies';
+    //     const options = {
+    //         method: 'PUT',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify(editedObj),
+    //     };
+    //     fetch(url, options)
+    //         .then( response => console.log(response) ) /* review was created successfully */
+    //         .catch( error => console.error(error) ); /* handle errors */
+    // }));
+    //
+    //
+    // DELETE BUTTON
+
+    function deleteMovie(id) {
+        fetch('https://flannel-brick-list.glitch.me/movies' + '/' + id, {
+            method: 'DELETE'
+        }).then(() => {
+                console.log('resolved');
+            }
+        )
+    }
 
 
-
-
-
-
-
-
+});
