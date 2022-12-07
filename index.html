@@ -29,12 +29,36 @@
             <input type="text" id="search" name="search"><br>
             <button type="button" id="searchButton">Submit</button>
         </form>
+
+        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Favorites</button>
+
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasRightLabel">Offcanvas right</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <ul id="favorite-list">
+
+                </ul>
+            </div>
+        </div>
+
     </div>
 
 
+<div>
     <div id="movie-info" class="card" style="width: 18rem;">
+<!--        movie goes here-->
+    </div>
+    <a id="favorite-button" href="#" class="btn btn-primary">Add to Favorites</a>
+    <div id="favorites" class="card" style="width: 18rem;">
 
     </div>
+</div>
+
+
+
 
 </main>
 <!-- JavaScript Bundle with Popper -->
