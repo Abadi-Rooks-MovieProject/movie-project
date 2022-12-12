@@ -53,7 +53,40 @@
     </div>
     <a id="favorite-button" href="#" class="btn btn-primary">Add to Favorites</a>
     <div id="favorites" class="card" style="width: 18rem;">
-
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Movie:</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="title-name" class="col-form-label">Title:</label>
+                                <input type="text" class="form-control" id="title-name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="release-date" class="col-form-label">Release Date:</label>
+                                <input type="text" class="form-control" id="release-date">
+                            </div>
+                            <div class="mb-3">
+                                <label for="rating-name" class="col-form-label">Rating:</label>
+                                <input type="text" class="form-control" id="rating-name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="genre-name" class="col-form-label">Genre:</label>
+                                <input type="text" class="form-control" id="genre-name">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
