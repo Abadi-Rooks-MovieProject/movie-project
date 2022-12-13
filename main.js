@@ -1,144 +1,157 @@
-"use strict";
-$(document).ready(function () {
-    let favButton = $('#favorite-button');
-    favButton.css('display', 'none');
+//----------------------- LOADER ------------------------
+const loader = document.querySelector('#loader-container')
+const load = () => { loader.style.visibility = 'visible'; }
+const timeout = () => { loader.style.visibility = 'hidden'; }
 
-    // When the user clicks the submit button...
-    let card = $("#searchButton").click(function (event) {
-        event.preventDefault();
+//----------------------- MY MOVIES: PROJECT REQUIREMENTS ------------------------
 
-        let searchBar = document.querySelector("#search");
-        let searchText = searchBar.value;
-        let posterImage = ''
-        fetch(`http://www.omdbapi.com/?apikey=${movieKey}&s=${searchText}`)
-            .then(function (response) {
-                // Parse the response as JSON
-                return response.json();
-            })
-            .then(function (poster) {
-                console.log(poster);
-
-                posterImage = poster.Search[0].Poster;
-            });
-
-        fetch(`http://www.omdbapi.com/?apikey=${movieKey}&t=${searchText}`)
-            .then(function (response) {
-                // Parse the response as JSON
-                return response.json();
-            })
-            .then(function (data) {
-
-                console.log(data);
-                // let movieDisplay = [];
-                let movieContainer = document.getElementById("movie-info");
-                if (data.Response === "False") {
-                    movieContainer.innerHTML = '';
-                    movieContainer.innerHTML += "Movie Not Available!";
-                    favButton.css('display', 'none');
-                } else {
-                    movieContainer.innerHTML = '';
-                    let delay = 500; // delay time in milliseconds
-
-                    let timeoutId = setTimeout(function () {
-                        movieContainer.innerHTML += `
-                        <div class="card-body">
-                          <img id="posterImage" src = "${posterImage}" class="card-img-top" alt="...">
-                           <h5 id="movieTitle" class="card-title">${data.Title}</h5>
-                          <p id="released" class="card-text">Released: ${data.Released}</p>
-                          <p id="rating" class="card-text">imdbRating: ${data.imdbRating}</p>
-                          <p id="genre" class="card-text" >Genre: ${data.Genre}</p>  
-<!--                          <a id="favorite-button" href="#" class="btn btn-primary">Add to Favorites</a>-->
-                         </div>                
-                        `;
-                        favButton.show();
-                    }, delay);
-                    // console.log($("#favorite-button"))
-                    // $('#favorite-button').toggle("d-none");
-                    //
-                    //     $('#favorite-button').click(function(event) {
-                    //         event.preventDefault();
-                    //
-                    //     });
-
-                }
-            })
-    });
+// FETCH FUNCTION: Returns Array
+// PROTOTYPE: fetchMyMovies();
+const fetchMyMovies = async (id) => {
+    try {
+        load();
+        const res = (id) ? await fetch(`https://flannel-brick-list.glitch.me/movies/${id}`):
+            await fetch('https://flannel-brick-list.glitch.me/movies/');
+        const data = await res.json();
+        timeout();
+        return data;
+    } catch (e) {
+        console.log("Error Occurred :(", e);
+    }
+};
 
 
-    document.getElementById('favorite-button').addEventListener('click', (function () {
-        let posterImage = document.querySelector('#posterImage');
-        let movieTitle = document.querySelector('#movieTitle');
-        let releaseDate = document.querySelector('#released');
-        let rating = document.querySelector('#rating');
-        let genre = document.querySelector('#genre');
-        console.log("event fired");
-        let movieObj = {
-            image: posterImage.textContent,
-            title: movieTitle.textContent,
-            released: releaseDate.textContent,
-            rating: rating.textContent,
-            genre: genre.textContent,
-        };
-        const url = 'https://flannel-brick-list.glitch.me/movies';
-        const options = {
+// POST FUNCTION: Add a movie to My Movies DB, using imdbId
+// RUNS: fetchMovieFromAPI(id) & fetchMyMovies()
+// PROTOTYPE: postToMyMovies('tt0104431')
+const addMyMovies = async (id) => {
+    try {
+        const movie = await fetchAPIMovie(id);
+        fetch("https://flannel-brick-list.glitch.me/movies", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(movieObj),
-        };
-        fetch(url, options)
-            .then(response => console.log(response)) /* review was created successfully */
-            .catch(error => console.error(error)); /* handle errors */
-    }))
+            body: JSON.stringify(movie),
+        }).then( async ()=>{
+            isDiscover = false;
+            await renderMovies(await movies());
+        });
+    } catch (e) {
+        console.log("Error Occurred :(", e);
+    }
+}
+
+// PATCH FUNCTION: Update a movie, using movie object
+// RUNS: fetchMyMovies()
+// PROTOTYPE: matchMyMovie(movie);
+const editMyMovie = (movie) => {
+    try {
+        timeout();
+        fetch(`https://flannel-brick-list.glitch.me/movies/${movie.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(movie),
+        }).then( async ()=>{
+            await renderMovies(await movies())
+        });
+    } catch (e) {
+        console.log(`Error Occurred: ${e}`)
+    }
+}
+
+// DELETE FUNCTION: Deletes a movie, using movie id
+// RUNS: fetchMyMovies()
+// PROTOTYPE: deleteMyMovie(id);
+const deleteMyMovie = (id) => {
+    try {
+        fetch(`https://flannel-brick-list.glitch.me/movies/${id}`, {
+            method: 'DELETE',
+        }).then( async ()=>{
+            await renderMovies(await movies())
+        });
+    } catch (e) {
+        console.log("Error Occurred :(", e);
+    }
+}
 
 
-});
-
-fetch("https://flannel-brick-list.glitch.me/movies")
-    .then(function (response) {
-        // Parse the response as JSON
-        return response.json();
-    })
-    .then(function (favoritesData) {
-        favoritesData.forEach(function (favMovie) {
-            let favoriteList = document.getElementById('favorite-list')
-            favoriteList.innerHTML +=
-                `<li>${favMovie.title} (${favMovie.released})</li>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo">Edit</button>`
         })
     })
+}
 
+// MODAL: EDIT BUTTON
+const addEditListener =  (id) => {
+    let updateBtn = document.querySelector('.update-movie')
+    updateBtn.addEventListener('click', async (e) => {
+        await editModal(await movies(id));
+    })
+}
 
-//
-// // get the array from the database using jQuery's $.ajax() function
-//     $.ajax({
-//         url: "https://flannel-brick-list.glitch.me/movies", type: "GET", dataType: "json", success: function (array) {
-//             // add the new object to the array
-//             array.push(newObject);
-//             console.log(array);
-//
-//             // save the array back to the database using $.ajax()
-//             $.ajax({
-//                 url: "https://flannel-brick-list.glitch.me/movies",
-//                 type: "POST",
-//                 data: JSON.stringify(array),
-//                 contentType: "application/json; charset=utf-8",
-//                 dataType: "json",
-//                 success: function (result) {
-//                     // the array was saved successfully
-//                     console.log(result);
-//                 }
-//             });
-//         }
-//     });
-//
-// });
+// MODAL: SAVE TO MY MOVIES BUTTON
+const addSaveListener = async (id) => {
+    let saveBtn = document.querySelector('.save-movie')
+    saveBtn.addEventListener('click', (e) => {
+        e.target;
+        let userConfirm = confirm(`Add this movie?`);
+        addMyMovies(id);
+    })
+}
 
+const addInputChanges = (id) => {
+    let inputs = document.querySelectorAll('.form-control')
+    let saveEdit = document.querySelector('#edit-movie')
+    inputs.forEach((input) =>{
+        input.addEventListener('input', (e) =>{
+            e.target
+            saveEdit.removeAttribute('disabled')
+        })
+    })
+}
 
+const addDeleteListener = (id) => {
+    let deleteBtn = document.querySelector('#delete-movie');
+    deleteBtn.addEventListener('click', async (e)=>{
+        let userConfirm = confirm(`Are you sure you want to delete this movie?`);
+        if (userConfirm) await deleteMyMovie(id);
+    })
+}
 
+const addSaveChangesListener = (id) => {
+    const saveBtn = document.querySelector('#edit-movie');
+    saveBtn.addEventListener('click', async (e)=>{
+        let newObj = await grabInputs(id);
+        editMyMovie(newObj);
+    })
+}
 
+const grabInputs = async (id) => {
+    const inputs = document.querySelectorAll('.form-control');
+    let newMovieEdits = {};
+    newMovieEdits['id'] = id;
+    inputs.forEach(input =>{
+        if (!!input.value) {
+            newMovieEdits[`${input.id}`] = `${input.value}`;
+        }
+    })
+    return newMovieEdits;
+}
 
+//----------------------- DARK MODE ------------------------
 
+// FUNCTION: Change style of page
+// PROTOTYPE: darkMode();
 
+const darkMode = () => {
+    document.querySelectorAll("html *, .card-body").forEach(element=> element.classList.toggle('bg-primary'));
+    document.querySelectorAll("h1, p, h2, h5, span, a, #movieModal").forEach(element => element.classList.toggle('text-white'));
+    document.querySelectorAll('button, input').forEach(btn => btn.classList.toggle('btn-outline-light'));
+    document.querySelector('#searchBtn').classList.toggle('bg-light');
+    document.querySelectorAll('.card, .modal-content, .dropdown-menu, hr').forEach(card => card.classList.toggle('border-light'));
+}
 
+// Event Listener
+const darkModeToggle = document.querySelector('.slider');
+darkModeToggle.addEventListener('click', darkMode);
